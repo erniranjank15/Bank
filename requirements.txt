@@ -1,4 +1,12 @@
 pydantic
-sqlalchemy
 fastapi
-uvicorn
+uvicorn[standard]
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-dotenv
+email-validator
+pymongo
+motor
+beanie
+gunicorn

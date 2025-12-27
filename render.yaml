@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: bank-management-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MONGODB_URL
+        sync: false
+      - key: DATABASE_NAME
+        value: bank_system
+      - key: SECRET_KEY
+        value: BANK_SECRET_KEY_123
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 30

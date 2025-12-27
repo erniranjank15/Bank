@@ -1,21 +1,31 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import motor.motor_asyncio
+from beanie import init_beanie
+import os
+from dotenv import load_dotenv
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./accounts.db"
+# Load environment variables
+load_dotenv()
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
+# MongoDB connection string - will use environment variable in production
+MONGODB_URL = os.getenv("MONGODB_URL")
+DATABASE_NAME = os.getenv("DATABASE_NAME", "bank_system")
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+if not MONGODB_URL:
+    raise ValueError("MONGODB_URL environment variable is required")
 
-Base = declarative_base()
+# Create MongoDB client
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL)
+database = client[DATABASE_NAME]
 
+async def init_db():
+    """Initialize database with Beanie ODM"""
+    from models import Users, Accounts, Counter
+    
+    await init_beanie(
+        database=database,
+        document_models=[Users, Accounts, Counter]
+    )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def get_database():
+    """Get database instance"""
+    return database
