@@ -2,7 +2,7 @@ from beanie import Document
 from pydantic import Field, EmailStr
 from typing import Optional
 from datetime import datetime
-from pymongo import IndexModel
+from pymongo import IndexModel, ReturnDocument
 
 
 class Counter(Document):
@@ -36,7 +36,6 @@ class Users(Document):
     async def get_next_id(cls) -> int:
         """Get next auto-increment ID using MongoDB atomic operations"""
         from database import get_database
-        from pymongo import ReturnDocument
         
         # Use MongoDB's findOneAndUpdate for atomic increment
         db = get_database()
@@ -76,7 +75,6 @@ class Accounts(Document):
     async def get_next_id(cls) -> int:
         """Get next auto-increment ID using MongoDB atomic operations"""
         from database import get_database
-        from pymongo import ReturnDocument
         
         # Use MongoDB's findOneAndUpdate for atomic increment
         db = get_database()
