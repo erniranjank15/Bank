@@ -2,7 +2,7 @@ from beanie import Document
 from pydantic import Field, EmailStr
 from typing import Optional
 from datetime import datetime
-from pymongo import IndexModel, ReturnDocument
+from pymongo import IndexModel
 
 
 class Counter(Document):
@@ -34,52 +34,22 @@ class Users(Document):
     
     @classmethod
     async def get_next_id(cls) -> int:
-        """Get next auto-increment ID with fallback mechanism"""
+        """Get next auto-increment ID - simplified and reliable"""
         try:
-            # Method 1: Use MongoDB atomic operations (preferred)
-            from database import get_database
+            # Simple approach: find the highest existing ID and add 1
+            last_user = await cls.find().sort([("user_id", -1)]).limit(1).to_list()
             
-            db = get_database()
-            result = await db.counters.find_one_and_update(
-                {"collection_name": "users"},
-                {"$inc": {"sequence_value": 1}},
-                upsert=True,
-                return_document=ReturnDocument.AFTER
-            )
-            
-            return result["sequence_value"]
-            
+            if last_user:
+                return last_user[0].user_id + 1
+            else:
+                return 1
+                
         except Exception as e:
-            # Method 2: Fallback to Beanie with retry logic
-            print(f"MongoDB atomic operation failed, using fallback: {e}")
-            
-            max_retries = 3
-            for attempt in range(max_retries):
-                try:
-                    counter = await Counter.find_one(Counter.collection_name == "users")
-                    
-                    if not counter:
-                        # Create new counter
-                        counter = Counter(collection_name="users", sequence_value=1)
-                        await counter.insert()
-                        return 1
-                    else:
-                        # Increment existing counter
-                        counter.sequence_value += 1
-                        await counter.save()
-                        return counter.sequence_value
-                        
-                except Exception as retry_error:
-                    if attempt == max_retries - 1:
-                        # Final fallback: use timestamp-based ID
-                        import time
-                        fallback_id = int(time.time()) % 100000
-                        print(f"All methods failed, using timestamp fallback: {fallback_id}")
-                        return fallback_id
-                    
-                    # Wait before retry
-                    import asyncio
-                    await asyncio.sleep(0.1)
+            # If all else fails, use timestamp-based ID
+            import time
+            fallback_id = int(str(int(time.time()))[-6:])  # Last 6 digits of timestamp
+            print(f"Using timestamp fallback ID: {fallback_id}")
+            return fallback_id
 
 
 class Accounts(Document):
@@ -106,49 +76,19 @@ class Accounts(Document):
     
     @classmethod
     async def get_next_id(cls) -> int:
-        """Get next auto-increment ID with fallback mechanism"""
+        """Get next auto-increment ID - simplified and reliable"""
         try:
-            # Method 1: Use MongoDB atomic operations (preferred)
-            from database import get_database
+            # Simple approach: find the highest existing ID and add 1
+            last_account = await cls.find().sort([("acc_no", -1)]).limit(1).to_list()
             
-            db = get_database()
-            result = await db.counters.find_one_and_update(
-                {"collection_name": "accounts"},
-                {"$inc": {"sequence_value": 1}},
-                upsert=True,
-                return_document=ReturnDocument.AFTER
-            )
-            
-            return result["sequence_value"]
-            
+            if last_account:
+                return last_account[0].acc_no + 1
+            else:
+                return 1
+                
         except Exception as e:
-            # Method 2: Fallback to Beanie with retry logic
-            print(f"MongoDB atomic operation failed, using fallback: {e}")
-            
-            max_retries = 3
-            for attempt in range(max_retries):
-                try:
-                    counter = await Counter.find_one(Counter.collection_name == "accounts")
-                    
-                    if not counter:
-                        # Create new counter
-                        counter = Counter(collection_name="accounts", sequence_value=1)
-                        await counter.insert()
-                        return 1
-                    else:
-                        # Increment existing counter
-                        counter.sequence_value += 1
-                        await counter.save()
-                        return counter.sequence_value
-                        
-                except Exception as retry_error:
-                    if attempt == max_retries - 1:
-                        # Final fallback: use timestamp-based ID
-                        import time
-                        fallback_id = int(time.time()) % 100000
-                        print(f"All methods failed, using timestamp fallback: {fallback_id}")
-                        return fallback_id
-                    
-                    # Wait before retry
-                    import asyncio
-                    await asyncio.sleep(0.1)
+            # If all else fails, use timestamp-based ID
+            import time
+            fallback_id = int(str(int(time.time()))[-6:])  # Last 6 digits of timestamp
+            print(f"Using timestamp fallback ID: {fallback_id}")
+            return fallback_id

@@ -19,11 +19,11 @@ database = client[DATABASE_NAME]
 
 async def init_db():
     """Initialize database with Beanie ODM"""
-    from models import Users, Accounts, Counter
+    from models import Users, Accounts
     
     await init_beanie(
         database=database,
-        document_models=[Users, Accounts, Counter]
+        document_models=[Users, Accounts]
     )
 
 def get_database():
