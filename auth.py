@@ -3,10 +3,16 @@ from jose import jwt, JWTError
 from database import get_database
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+import os
 
-SECRET_KEY = "BANK_SECRET_KEY_123"   # keep secret
+# Use environment variable for production security
+SECRET_KEY = os.getenv("SECRET_KEY", "BANK_SECRET_KEY_123")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# Validate SECRET_KEY is not None or empty
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY must be set and not empty")
 
 
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
@@ -62,7 +68,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             "user_id": int(user_id),
             "role": role
         }
-    except JWTError:
+    except JWTError as e:
         raise HTTPException(status_code=401, detail="Invalid token")
 
 

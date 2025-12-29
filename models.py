@@ -34,16 +34,20 @@ class Users(Document):
     
     @classmethod
     async def get_next_id(cls) -> int:
-        """Get next auto-increment ID"""
-        counter = await Counter.find_one(Counter.collection_name == "users")
-        if not counter:
-            counter = Counter(collection_name="users", sequence_value=1)
-            await counter.insert()
-            return 1
-        else:
-            counter.sequence_value += 1
-            await counter.save()
-            return counter.sequence_value
+        """Get next auto-increment ID using MongoDB atomic operations"""
+        from database import get_database
+        from pymongo import ReturnDocument
+        
+        # Use MongoDB's findOneAndUpdate for atomic increment
+        db = get_database()
+        result = await db.counters.find_one_and_update(
+            {"collection_name": "users"},
+            {"$inc": {"sequence_value": 1}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER  # Return the updated document
+        )
+        
+        return result["sequence_value"]
 
 
 class Accounts(Document):
@@ -70,13 +74,17 @@ class Accounts(Document):
     
     @classmethod
     async def get_next_id(cls) -> int:
-        """Get next auto-increment ID"""
-        counter = await Counter.find_one(Counter.collection_name == "accounts")
-        if not counter:
-            counter = Counter(collection_name="accounts", sequence_value=1)
-            await counter.insert()
-            return 1
-        else:
-            counter.sequence_value += 1
-            await counter.save()
-            return counter.sequence_value
+        """Get next auto-increment ID using MongoDB atomic operations"""
+        from database import get_database
+        from pymongo import ReturnDocument
+        
+        # Use MongoDB's findOneAndUpdate for atomic increment
+        db = get_database()
+        result = await db.counters.find_one_and_update(
+            {"collection_name": "accounts"},
+            {"$inc": {"sequence_value": 1}},
+            upsert=True,
+            return_document=ReturnDocument.AFTER  # Return the updated document
+        )
+        
+        return result["sequence_value"]

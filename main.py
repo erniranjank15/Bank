@@ -20,20 +20,21 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# CORS configuration - more permissive for production
+# CORS configuration - secure for production
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://localhost:3000",
-    # Add your frontend domain here when you have one
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",
+    # Add your production frontend domain here
     # "https://yourdomain.com",
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # More permissive for API testing
+    allow_origins=origins,  # Restrict to specific origins for security
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["*"],
 )
 

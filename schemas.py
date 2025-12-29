@@ -63,6 +63,19 @@ class ShowUser(BaseModel):
     accounts: List[ShowAccount] = []
 
 
+class ShowUserProfile(BaseModel):
+    """Extended user profile with summary information"""
+    user_id: int  # Sequential ID like 1, 2, 3...
+    username: str
+    email: EmailStr
+    mob_no: int
+    role: str 
+    created_at: datetime
+    accounts: List[ShowAccount] = []
+    total_balance: Optional[float] = 0.0
+    total_accounts: Optional[int] = 0
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str

@@ -74,6 +74,26 @@ async def get_user_by_id(user_id: int):
     return user_dict
 
 
+async def get_user_profile(user_id: int):
+    """Get user profile with detailed account information - optimized for profile view"""
+    user = await Users.find_one(Users.user_id == user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get accounts for this user with additional profile information
+    accounts = await Accounts.find(Accounts.user_id == user.user_id).to_list()
+    
+    # Calculate total balance across all accounts
+    total_balance = sum(account.balance for account in accounts)
+    
+    user_dict = user.dict()
+    user_dict["accounts"] = [account.dict() for account in accounts]
+    user_dict["total_balance"] = total_balance
+    user_dict["total_accounts"] = len(accounts)
+    
+    return user_dict
+
+
 async def delete_user(user_id: int):
     """Delete user and cascade delete their accounts"""
     user = await Users.find_one(Users.user_id == user_id)

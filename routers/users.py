@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, status
 from typing import List
 from repository import users as users_repo
-from schemas import ShowUser, CreateUser as User
+from schemas import ShowUser, ShowUserProfile, CreateUser as User
 from auth import admin_only, get_current_user, user_or_admin, user_only
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -10,6 +10,12 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ShowUser)
 async def create(request: User):
     return await users_repo.create_user_with_account(request)  
+
+
+@router.get("/profile", status_code=200, response_model=ShowUserProfile)
+async def get_my_profile(current_user=Depends(get_current_user)):
+    """Get current user's profile with all associated accounts and summary info"""
+    return await users_repo.get_user_profile(current_user["user_id"])
 
 
 @router.get("/", status_code=200, response_model=List[ShowUser])
