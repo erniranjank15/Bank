@@ -26,8 +26,8 @@ origins = [
     "http://127.0.0.1:3000",
     "http://localhost:5173",  # Vite dev server
     "http://127.0.0.1:5173",
-    "https://banknk.netlify.app/",
-    "https://*.netlify.app/"
+    "https://banknk.netlify.app",  # Your deployed frontend (no trailing slash)
+    # Add more domains if needed
 ]
 
 app.add_middleware(
