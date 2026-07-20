@@ -94,3 +94,5 @@ async def test_email():
         body="<h2>Email is working!</h2><p>This is a test notification.</p>"
     )
     return {"message": "Test email sent"}
+
+
