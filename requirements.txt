@@ -11,3 +11,4 @@ pymongo
 motor
 beanie
 gunicorn
+fastapi-mail
