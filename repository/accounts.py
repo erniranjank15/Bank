@@ -2,7 +2,8 @@ from fastapi import HTTPException, status
 from models import Accounts, Users
 from schemas import CreateAccount, UpdateAccountbyUser as UpdateAccount, UpdateAccountbyAdmin
 from pymongo.errors import DuplicateKeyError
-
+from fastapi import BackgroundTasks
+from service.emailService import send_email
 
 async def get_all():
     """Get all accounts"""
@@ -97,34 +98,207 @@ async def show(id: int):
     return account.dict()
 
 
-async def deposit(id: int, amount: float):
-    """Deposit money to account"""
+async def deposit(id: int, amount: float, background_tasks: BackgroundTasks):
+    """Deposit money to account and send email notification"""
+
+    # Find account
     account = await Accounts.find_one(Accounts.acc_no == id)
+
     if not account:
-        raise HTTPException(status_code=404, detail=f"Account with id {id} not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Account with id {id} not found"
+        )
 
+    # Validate amount
     if amount <= 0:
-        raise HTTPException(status_code=400, detail="Deposit amount must be positive")
+        raise HTTPException(
+            status_code=400,
+            detail="Deposit amount must be positive"
+        )
 
+    # Get linked user (email is stored here)
+    user = await Users.find_one(Users.user_id == account.user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Linked user not found"
+        )
+
+    # Store previous balance
+    previous_balance = account.balance
+
+    # Update balance
     account.balance += amount
+    new_balance = account.balance
+
+    # Save account
     await account.save()
-    
-    return account.dict()
 
+    # ---------------- EMAIL TEMPLATE ----------------
+    email_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
 
-async def withdraw(id: int, amount: float):
-    """Withdraw money from account"""
+        <h2 style="color: #16a34a;">Deposit Successful</h2>
+
+        <p>Dear <b>{account.acc_holder_name}</b>,</p>
+
+        <p>Your account has been credited successfully.</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><b>Transaction Type</b></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;">Deposit</td>
+            </tr>
+
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><b>Deposited Amount</b></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb; color: #16a34a; font-weight: bold;">
+                    ₹{amount:,.2f}
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><b>Available Balance</b></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: bold;">
+                    ₹{new_balance:,.2f}
+                </td>
+            </tr>
+
+        </table>
+
+        <p style="margin-top: 20px;">
+            Thank you for banking with <b>MyBank</b>.
+        </p>
+
+    </div>
+    """
+
+    # Send email using USER email
+    background_tasks.add_task(
+        send_email,
+        user.email,
+        "Deposit Successful",
+        email_body
+    )
+
+    return {
+        "success": True,
+        "message": "Deposit completed successfully and email notification sent",
+        "data": {
+            "account_no": account.acc_no,
+            "account_holder": account.acc_holder_name,
+            "deposited_amount": amount,
+            "previous_balance": previous_balance,
+            "available_balance": new_balance,
+            "email_sent_to": user.email
+        }
+    }
+
+async def withdraw(id: int, amount: float, background_tasks: BackgroundTasks):
+    """Withdraw money from account and send email notification"""
+
+    # Find account
     account = await Accounts.find_one(Accounts.acc_no == id)
+
     if not account:
-        raise HTTPException(status_code=404, detail=f"Account with id {id} not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"Account with id {id} not found"
+        )
 
+    # Validate amount
     if amount <= 0:
-        raise HTTPException(status_code=400, detail="Withdrawal amount must be positive")
-        
-    if amount > account.balance:
-        raise HTTPException(status_code=400, detail="Insufficient funds for withdrawal")
+        raise HTTPException(
+            status_code=400,
+            detail="Withdrawal amount must be positive"
+        )
 
+    # Check balance
+    if amount > account.balance:
+        raise HTTPException(
+            status_code=400,
+            detail="Insufficient funds for withdrawal"
+        )
+
+    # Get linked user
+    user = await Users.find_one(Users.user_id == account.user_id)
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="Linked user not found"
+        )
+
+    # Store previous balance
+    previous_balance = account.balance
+
+    # Update balance
     account.balance -= amount
+    new_balance = account.balance
+
+    # Save account
     await account.save()
-    
-    return account.dict()
+
+    # ---------------- EMAIL TEMPLATE ----------------
+    email_body = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+
+        <h2 style="color: #dc2626;">Withdrawal Alert</h2>
+
+        <p>Dear <b>{account.acc_holder_name}</b>,</p>
+
+        <p>A debit transaction has been processed from your account.</p>
+
+        <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
+
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><b>Transaction Type</b></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;">Withdrawal</td>
+            </tr>
+
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><b>Withdrawn Amount</b></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb; color: #dc2626; font-weight: bold;">
+                    ₹{amount:,.2f}
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 10px; border: 1px solid #e5e7eb;"><b>Available Balance</b></td>
+                <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: bold;">
+                    ₹{new_balance:,.2f}
+                </td>
+            </tr>
+
+        </table>
+
+        <p style="margin-top: 20px;">
+            If you did not authorize this transaction, please contact customer support immediately.
+        </p>
+
+    </div>
+    """
+
+    # Send email
+    background_tasks.add_task(
+        send_email,
+        user.email,
+        "Withdrawal Alert",
+        email_body
+    )
+
+    return {
+        "success": True,
+        "message": "Withdrawal completed successfully and email notification sent",
+        "data": {
+            "account_no": account.acc_no,
+            "account_holder": account.acc_holder_name,
+            "withdrawn_amount": amount,
+            "previous_balance": previous_balance,
+            "available_balance": new_balance,
+            "email_sent_to": user.email
+        }
+    }

@@ -12,6 +12,8 @@ from schemas import Token
 from models import Users
 from security import verify_password
 
+from service.emailService import send_email
+
 app = FastAPI(
     title="Bank Management System API",
     description="A comprehensive banking system with MongoDB backend",
@@ -82,3 +84,13 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         "access_token": access_token,
         "token_type": "bearer"
     }
+    
+    
+@app.get("/test-email")
+async def test_email():
+    await send_email(
+        recipient="yourgmail@gmail.com",
+        subject="Bank System Test",
+        body="<h2>Email is working!</h2><p>This is a test notification.</p>"
+    )
+    return {"message": "Test email sent"}

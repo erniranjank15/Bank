@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, BackgroundTasks
 from typing import List
 
 from repository import accounts as accounts_repo
@@ -38,21 +38,34 @@ async def show(id: int, current_user=Depends(user_or_admin)):
     return await accounts_repo.show(id)
 
 
-@router.post("/{id}/deposit", status_code=status.HTTP_200_OK, response_model=ShowAccount)
-async def deposit(id: int, amount: float, current_user=Depends(user_or_admin)):
+@router.post("/{id}/deposit", status_code=status.HTTP_200_OK)
+async def deposit(
+    id: int,
+    amount: float,
+    background_tasks: BackgroundTasks,
+    current_user=Depends(user_or_admin)
+):
     if amount <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Deposit amount must be greater than zero."
         )
-    return await accounts_repo.deposit(id, amount)
+
+    return await accounts_repo.deposit(id, amount, background_tasks)
 
 
-@router.post("/{id}/withdraw", status_code=status.HTTP_200_OK, response_model=ShowAccount)
-async def withdraw(id: int, amount: float, current_user=Depends(user_or_admin)):
+# ---------------- WITHDRAW ----------------
+@router.post("/{id}/withdraw", status_code=status.HTTP_200_OK)
+async def withdraw(
+    id: int,
+    amount: float,
+    background_tasks: BackgroundTasks,
+    current_user=Depends(user_or_admin)
+):
     if amount <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Withdrawal amount must be greater than zero."
         )
-    return await accounts_repo.withdraw(id, amount)
+
+    return await accounts_repo.withdraw(id, amount, background_tasks)
