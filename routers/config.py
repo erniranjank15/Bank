@@ -10,7 +10,7 @@ conf = ConnectionConfig(
     MAIL_FROM=os.getenv("MAIL_FROM"),
     MAIL_PORT=int(os.getenv("MAIL_PORT")),
     MAIL_SERVER=os.getenv("MAIL_SERVER"),
-    MAIL_STARTTLS=os.getenv("MAIL_STARTTLS") == "True",
-    MAIL_SSL_TLS=os.getenv("MAIL_SSL_TLS") == "True",
+    MAIL_STARTTLS=os.getenv("MAIL_STARTTLS"),
+    MAIL_SSL_TLS=os.getenv("MAIL_SSL_TLS"),
     USE_CREDENTIALS=True
 )
