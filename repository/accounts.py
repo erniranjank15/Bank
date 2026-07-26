@@ -170,7 +170,7 @@ async def deposit(id: int, amount: float, background_tasks: BackgroundTasks):
         </table>
 
         <p style="margin-top: 20px;">
-            Thank you for banking with <b>MyBank</b>.
+            Thank you for banking with <b>NK Bank</b>.
         </p>
 
     </div>
