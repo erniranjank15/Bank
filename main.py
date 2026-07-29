@@ -96,3 +96,12 @@ async def test_email():
     return {"message": "Test email sent"}
 
 
+
+import requests
+
+@app.get("/server-ip")
+def server_ip():
+    ip = requests.get("https://api.ipify.org").text
+    return {"ip": ip}
+
+
