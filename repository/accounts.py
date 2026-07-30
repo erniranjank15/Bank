@@ -143,6 +143,8 @@ async def deposit(id: int, amount: float, background_tasks: BackgroundTasks):
         <h2 style="color: #16a34a;">Deposit Successful</h2>
 
         <p>Dear <b>{account.acc_holder_name}</b>,</p>
+        
+        <p>Your Account No. <b>{account.acc_no}</b> with Account Type <b>{account.acc_type}</b> </p>
 
         <p>Your account has been credited successfully.</p>
 
@@ -170,12 +172,12 @@ async def deposit(id: int, amount: float, background_tasks: BackgroundTasks):
         </table>
 
         <p style="margin-top: 20px;">
-            Thank you for banking with <b>NKBank</b>.
+            Thank you for banking with <b>NK Bank</b>.
         </p>
 
     </div>
     """
-
+    print("Recipient Email:", user.email)
     # Send email using USER email
     background_tasks.add_task(
         send_email,
@@ -249,7 +251,9 @@ async def withdraw(id: int, amount: float, background_tasks: BackgroundTasks):
         <h2 style="color: #dc2626;">Withdrawal Alert</h2>
 
         <p>Dear <b>{account.acc_holder_name}</b>,</p>
-
+        
+        <p>Your Account No. <b>{account.acc_no}</b> with Account Type <b>{account.acc_type}</b> </p>
+        
         <p>A debit transaction has been processed from your account.</p>
 
         <table style="width: 100%; border-collapse: collapse; margin-top: 16px;">
@@ -277,7 +281,6 @@ async def withdraw(id: int, amount: float, background_tasks: BackgroundTasks):
 
         <p style="margin-top: 20px;">
             If you did not authorize this transaction, please contact customer support immediately.
-             Thank you for banking with <b>NKBank</b>.
         </p>
 
     </div>
