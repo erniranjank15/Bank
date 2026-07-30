@@ -281,6 +281,7 @@ async def withdraw(id: int, amount: float, background_tasks: BackgroundTasks):
 
         <p style="margin-top: 20px;">
             If you did not authorize this transaction, please contact customer support immediately.
+              Thank you for banking with <b>NK Bank</b>.
         </p>
 
     </div>
