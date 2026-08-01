@@ -96,10 +96,6 @@ class Accounts(Document):
         
         
         
-from beanie import Document
-from pydantic import EmailStr, Field
-from datetime import datetime
-from pymongo import IndexModel
 
 class PasswordResetOTP(Document):
     email: EmailStr
