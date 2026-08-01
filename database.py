@@ -12,11 +12,11 @@ client = AsyncIOMotorClient(MONGODB_URL)
 database = client[DATABASE_NAME]
 
 async def init_db():
-    from models import Users, Accounts
+    from models import Users, Accounts, PasswordResetOTP
 
     await init_beanie(
         database=database,  # ✅ no ()
-        document_models=[Users, Accounts]
+        document_models=[Users, Accounts, PasswordResetOTP]
     )
 
 def get_database():

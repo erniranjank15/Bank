@@ -7,6 +7,7 @@ import os
 from database import init_db
 from routers import accounts as accounts_router
 from routers import users as users_router
+from routers import forgotpassword as forgotpassword_router
 from auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from schemas import Token
 from models import Users
@@ -49,6 +50,7 @@ async def startup():
 # Include routers
 app.include_router(accounts_router.router)
 app.include_router(users_router.router)
+app.include_router(forgotpassword_router.router)
 
 @app.get("/")
 async def read_root():
