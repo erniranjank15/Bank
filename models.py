@@ -92,3 +92,25 @@ class Accounts(Document):
             fallback_id = int(str(int(time.time()))[-6:])  # Last 6 digits of timestamp
             print(f"Using timestamp fallback ID: {fallback_id}")
             return fallback_id
+        
+        
+        
+        
+from beanie import Document
+from pydantic import EmailStr, Field
+from datetime import datetime
+from pymongo import IndexModel
+
+class PasswordResetOTP(Document):
+    email: EmailStr
+    otp: str = Field(min_length=6, max_length=6)
+    expires_at: datetime
+    is_used: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "password_reset_otps"
+        indexes = [
+            IndexModel("email"),
+            IndexModel("otp"),
+        ]
